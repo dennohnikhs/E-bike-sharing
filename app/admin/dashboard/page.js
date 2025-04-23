@@ -13,6 +13,7 @@ import {
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [stats, setStats] = useState({
     totalBikes: 0,
     totalUsers: 0,
@@ -29,6 +30,10 @@ export default function AdminDashboard() {
       totalRevenue: 3450,
     });
   }, []);
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
 
   const StatCard = ({ title, value, icon: Icon }) => (
     <div className="bg-white p-6 rounded-lg shadow-md">
@@ -198,10 +203,19 @@ export default function AdminDashboard() {
   );
 
   return (
-    <div className="flex">
+    <div className="flex relative">
+      {/* Hamburger Menu Button (Mobile Only) */}
+      <button
+        onClick={toggleMobileMenu}
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-md">
+        <BsList className="text-2xl" />
+      </button>
+
       {/* Navigation Sidebar */}
-      <div className="w-64 bg-white min-h-screen shadow-md p-4">
-        <h2 className="text-xl font-bold mb-6">Admin Panel</h2>
+      <div
+        className={`${
+          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+        } lg:translate-x-0 fixed lg:static w-64 bg-white min-h-screen shadow-md p-4 transition-transform duration-300 ease-in-out z-40`}>
         <nav className="space-y-2">
           <TabButton
             id="dashboard"
@@ -236,7 +250,15 @@ export default function AdminDashboard() {
         </nav>
       </div>
 
-      <div className="flex-1 p-6 bg-gray-100 min-h-screen">
+      {/* Overlay for mobile menu */}
+      {isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
+          onClick={toggleMobileMenu}
+        />
+      )}
+
+      <div className="flex-1 p-6 bg-gray-100 min-h-screen lg:ml-0">
         <div className="flex justify-end mb-4">
           <button
             onClick={() => (window.location.href = "/")}
