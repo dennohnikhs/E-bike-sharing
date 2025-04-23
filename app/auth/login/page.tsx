@@ -2,27 +2,76 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import userData from '@/data/users.json';
-import type { UserData } from '@/types/user';
+
+interface LoginResponse {
+  token: string;
+  user: {
+    id: string;
+    name: string;
+    role: string;
+  };
+}
 
 export default function Login() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const typedUserData = userData as UserData;
-    const user = typedUserData.users.find(
-      (u) => u.email === email && u.password === password
-    );
+    setLoading(true);
+    setError('');
 
-    if (user) {
-      localStorage.setItem('token', 'dummy-token');
-      router.push('/');
-    } else {
-      setError('Invalid email or password');
+    try {
+      // Make API call to backend for authentication
+      const response = await fetch('http://localhost:5000/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      // Handle authentication failure
+      if (response.status === 401) {
+        setError('Invalid email or password');
+        return;
+      }
+
+      if (response.status === 404) {
+        setError('User not found');
+        return;
+      }
+
+      if (!response.ok) {
+        setError(data.message || 'Authentication failed');
+        return;
+      }
+
+      // Verify we received the expected data
+      if (!data.token || !data.user) {
+        setError('Invalid server response');
+        return;
+      }
+
+      // Store authentication data
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      
+      // Redirect based on user role
+      if (data.user.role === 'admin') {
+        router.push('/admin/dashboard');
+      } else {
+        router.push('/dashboard');
+      }
+    } catch (err) {
+      setError('Server connection failed');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -58,8 +107,9 @@ export default function Login() {
             type="submit"
             style={{ background: 'var(--color-primary)' }}
             className="w-full py-2 text-white rounded-lg hover:opacity-90"
+            disabled={loading}
           >
-            Login
+            {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
         <p className="mt-4 text-center">
