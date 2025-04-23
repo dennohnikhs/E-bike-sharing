@@ -1,9 +1,19 @@
-import { ClockIcon, BoltIcon, MapIcon, ChartBarIcon } from '@heroicons/react/24/outline';
+import { ClockIcon, BoltIcon, MapIcon, ChartBarIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
+import Link from 'next/link';
 
 export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <main className="container mx-auto px-4 py-8 max-w-7xl">
+        <div className="w-full mb-6">
+          <Link href="/">
+            <button className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors">
+              <ArrowLeftIcon className="w-5 h-5" />
+              <span>Back to Home</span>
+            </button>
+          </Link>
+        </div>
+        
         {/* Dashboard Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-display font-bold" style={{ color: 'var(--color-earth-dark)' }}>
