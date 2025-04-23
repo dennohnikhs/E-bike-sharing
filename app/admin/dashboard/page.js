@@ -1,15 +1,18 @@
 "use client";
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import {
   BsBicycle,
   BsPeople,
   BsBookmark,
   BsCashStack,
   BsBoxArrowRight,
+  BsGear,
+  BsPlus,
+  BsList,
 } from "react-icons/bs";
 
 export default function AdminDashboard() {
+  const [activeTab, setActiveTab] = useState("dashboard");
   const [stats, setStats] = useState({
     totalBikes: 0,
     totalUsers: 0,
@@ -39,16 +42,33 @@ export default function AdminDashboard() {
     </div>
   );
 
-  return (
-    <div className="p-6 bg-gray-100 min-h-screen">
+  const ActionButton = ({ title, icon: Icon, onClick }) => (
+    <button
+      onClick={onClick}
+      className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+      <Icon className="text-xl" />
+      <span>{title}</span>
+    </button>
+  );
+
+  const TabButton = ({ id, title, icon: Icon, isActive }) => (
+    <button
+      onClick={() => setActiveTab(id)}
+      className={`flex items-center gap-2 p-2 w-full rounded transition-colors ${
+        isActive ? "bg-blue-50 text-blue-600" : "hover:bg-gray-100"
+      }`}>
+      <Icon /> {title}
+    </button>
+  );
+
+  const DashboardContent = () => (
+    <>
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        <Link
-          href="/"
-          className="flex items-center bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors">
-          <BsBoxArrowRight className="text-xl mr-2" />
-          <span>Exit Admin</span>
-        </Link>
+        <h1 className="text-3xl font-bold">Dashboard Overview</h1>
+        <div className="flex gap-4">
+          <ActionButton title="Add Bike" icon={BsPlus} onClick={() => {}} />
+          <ActionButton title="Add User" icon={BsPlus} onClick={() => {}} />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -77,8 +97,35 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-bold mb-4">Recent Bookings</h2>
-          {/* TODO: Add a table or list of recent bookings */}
-          <p className="text-gray-500">No recent bookings to display</p>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-gray-50">
+                  <th className="px-4 py-2 text-left">User</th>
+                  <th className="px-4 py-2 text-left">Bike ID</th>
+                  <th className="px-4 py-2 text-left">Status</th>
+                  <th className="px-4 py-2 text-left">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b">
+                  <td className="px-4 py-2">John Doe</td>
+                  <td className="px-4 py-2">BIKE-001</td>
+                  <td className="px-4 py-2">
+                    <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full">
+                      Active
+                    </span>
+                  </td>
+                  <td className="px-4 py-2">
+                    <button className="text-blue-500 hover:text-blue-700">
+                      View
+                    </button>
+                  </td>
+                </tr>
+                {/* Add more rows as needed */}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow-md">
@@ -100,6 +147,110 @@ export default function AdminDashboard() {
             </div>
           </div>
         </div>
+      </div>
+    </>
+  );
+
+  const UsersContent = () => (
+    <div className="space-y-6">
+      <h1 className="text-3xl font-bold">Users Management</h1>
+      <div className="bg-white p-6 rounded-lg shadow-md">
+        {/* Add your users management content here */}
+        <h2 className="text-xl font-bold mb-4">All Users</h2>
+        <table className="w-full">{/* Add your users table content */}</table>
+      </div>
+    </div>
+  );
+
+  const BikesContent = () => (
+    <div className="space-y-6">
+      <h1 className="text-3xl font-bold">Bikes Management</h1>
+      <div className="bg-white p-6 rounded-lg shadow-md">
+        {/* Add your bikes management content here */}
+        <h2 className="text-xl font-bold mb-4">All Bikes</h2>
+        <table className="w-full">{/* Add your bikes table content */}</table>
+      </div>
+    </div>
+  );
+
+  const BookingsContent = () => (
+    <div className="space-y-6">
+      <h1 className="text-3xl font-bold">Bookings Management</h1>
+      <div className="bg-white p-6 rounded-lg shadow-md">
+        {/* Add your bookings management content here */}
+        <h2 className="text-xl font-bold mb-4">All Bookings</h2>
+        <table className="w-full">
+          {/* Add your bookings table content */}
+        </table>
+      </div>
+    </div>
+  );
+
+  const SettingsContent = () => (
+    <div className="space-y-6">
+      <h1 className="text-3xl font-bold">Settings</h1>
+      <div className="bg-white p-6 rounded-lg shadow-md">
+        {/* Add your settings content here */}
+        <h2 className="text-xl font-bold mb-4">System Settings</h2>
+        {/* Add your settings form or options */}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="flex">
+      {/* Navigation Sidebar */}
+      <div className="w-64 bg-white min-h-screen shadow-md p-4">
+        <h2 className="text-xl font-bold mb-6">Admin Panel</h2>
+        <nav className="space-y-2">
+          <TabButton
+            id="dashboard"
+            title="Dashboard"
+            icon={BsList}
+            isActive={activeTab === "dashboard"}
+          />
+          <TabButton
+            id="users"
+            title="Users"
+            icon={BsPeople}
+            isActive={activeTab === "users"}
+          />
+          <TabButton
+            id="bikes"
+            title="Bikes"
+            icon={BsBicycle}
+            isActive={activeTab === "bikes"}
+          />
+          <TabButton
+            id="bookings"
+            title="Bookings"
+            icon={BsBookmark}
+            isActive={activeTab === "bookings"}
+          />
+          <TabButton
+            id="settings"
+            title="Settings"
+            icon={BsGear}
+            isActive={activeTab === "settings"}
+          />
+        </nav>
+      </div>
+
+      <div className="flex-1 p-6 bg-gray-100 min-h-screen">
+        <div className="flex justify-end mb-4">
+          <button
+            onClick={() => (window.location.href = "/")}
+            className="flex items-center bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors">
+            <BsBoxArrowRight className="text-xl mr-2" />
+            <span>Exit Admin</span>
+          </button>
+        </div>
+
+        {activeTab === "dashboard" && <DashboardContent />}
+        {activeTab === "users" && <UsersContent />}
+        {activeTab === "bikes" && <BikesContent />}
+        {activeTab === "bookings" && <BookingsContent />}
+        {activeTab === "settings" && <SettingsContent />}
       </div>
     </div>
   );
