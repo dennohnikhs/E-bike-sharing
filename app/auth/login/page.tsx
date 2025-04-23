@@ -66,7 +66,7 @@ export default function Login() {
       if (data.user.role === 'admin') {
         router.push('/admin/dashboard');
       } else {
-        router.push('/dashboard');
+        router.push('/');
       }
     } catch (err) {
       setError('Server connection failed');
