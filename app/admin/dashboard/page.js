@@ -261,10 +261,13 @@ export default function AdminDashboard() {
       <div className="flex-1 p-6 bg-gray-100 min-h-screen lg:ml-0">
         <div className="flex justify-end mb-4">
           <button
-            onClick={() => (window.location.href = "/")}
+            onClick={() => {
+              localStorage.removeItem("adminToken");
+              window.location.href = "/auth/login";
+            }}
             className="flex items-center bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors">
             <BsBoxArrowRight className="text-xl mr-2" />
-            <span>Exit Admin</span>
+            <span>Logout</span>
           </button>
         </div>
 

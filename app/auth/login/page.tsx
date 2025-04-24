@@ -25,15 +25,6 @@ export default function Login() {
     setError('');
 
     try {
-        
-        const isAdmin = email.toLowerCase() === process.env.NEXT_PUBLIC_ADMIN_EMAIL?.toLowerCase() && 
-        password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
-        console.log('isAdmin:', isAdmin); // Debugging line
-        console.log('Admin password:', process.env.NEXT_PUBLIC_ADMIN_PASSWORD);
-        console.log('Admin email:', process.env.NEXT_PUBLIC_ADMIN_EMAIL);
-        if (isAdmin) {
-            router.push('/admin/dashboard');
-          } 
       // Make API call to backend for authentication
       const response = await fetch('http://localhost:5000/api/login', {
         method: 'POST',
@@ -67,12 +58,14 @@ export default function Login() {
         return;
       }
 
-        // Store authentication data
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify({
-          ...data.user,
-          isAdmin // Add admin status to stored user data
-        }));
+      const isAdmin = data.user.role === 'admin';
+
+      // Store authentication data
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify({
+        ...data.user,
+        isAdmin
+      }));
       
       // Redirect based on user role
       if (isAdmin) {
