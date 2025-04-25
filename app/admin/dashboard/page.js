@@ -156,16 +156,87 @@ export default function AdminDashboard() {
     </>
   );
 
-  const UsersContent = () => (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Users Management</h1>
-      <div className="bg-white p-6 rounded-lg shadow-md">
-        {/* Add your users management content here */}
-        <h2 className="text-xl font-bold mb-4">All Users</h2>
-        <table className="w-full">{/* Add your users table content */}</table>
+  const UsersContent = () => {
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+      const fetchUsers = async () => {
+        try {
+          const response = await fetch("http://localhost:5000/api/admin/users");
+          const result = await response.json();
+
+          if (result.status === "success" && Array.isArray(result.data)) {
+            setUsers(result.data);
+          } else {
+            throw new Error("Invalid data format received");
+          }
+        } catch (err) {
+          setError("Failed to fetch users");
+          console.error("Error:", err);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchUsers();
+    }, []);
+
+    if (loading) return <div className="text-center">Loading users...</div>;
+    if (error) return <div className="text-red-500">Error: {error}</div>;
+
+    return (
+      <div className="space-y-6">
+        <h1 className="text-3xl font-bold">Users Management</h1>
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h2 className="text-xl font-bold mb-4">All Users</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-gray-50">
+                  <th className="px-4 py-2 text-left">Name</th>
+                  <th className="px-4 py-2 text-left">Email</th>
+                  <th className="px-4 py-2 text-left">Role</th>
+                  <th className="px-4 py-2 text-left">Created At</th>
+                  <th className="px-4 py-2 text-left">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((user) => (
+                  <tr key={user._id} className="border-b">
+                    <td className="px-4 py-2">{user.name}</td>
+                    <td className="px-4 py-2">{user.email}</td>
+                    <td className="px-4 py-2">
+                      <span
+                        className={`px-2 py-1 rounded-full ${
+                          user.role === "admin"
+                            ? "bg-purple-100 text-purple-800"
+                            : "bg-blue-100 text-blue-800"
+                        }`}>
+                        {user.role}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2">
+                      {new Date(user.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-4 py-2">
+                      <button className="text-blue-500 hover:text-blue-700 mr-2">
+                        Edit
+                      </button>
+                      <button className="text-red-500 hover:text-red-700">
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const BikesContent = () => (
     <div className="space-y-6">
