@@ -1,7 +1,35 @@
+'use client';
 import { ClockIcon, BoltIcon, MapIcon, ChartBarIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { jwtDecode } from 'jwt-decode';
+
+interface TokenPayload {
+  userId: string;
+  name: string;
+  role: string;
+  iat: number;
+  exp: number;
+}
 
 export default function Dashboard() {
+  const [userData, setUserData] = useState<{ name: string; id: string } | null>(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const decodedToken = jwtDecode<TokenPayload>(token);
+        setUserData({
+          name: decodedToken.name || 'User',
+          id: decodedToken.userId || 'Unknown'
+        });
+      } catch (error) {
+        console.error('Error decoding token:', error);
+      }
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <main className="container mx-auto px-4 py-8 max-w-7xl">
@@ -17,9 +45,9 @@ export default function Dashboard() {
         {/* Dashboard Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-display font-bold" style={{ color: 'var(--color-earth-dark)' }}>
-            My E-Bike Dashboard
+            Your E-Bike Dashboard
           </h1>
-          <p className="text-gray-600">Welcome back! Here's your riding overview.</p>
+          <p className="text-gray-600">Welcome back, {userData?.name}! (ID: {userData?.id})</p>
         </div>
 
         {/* Stats Grid */}
