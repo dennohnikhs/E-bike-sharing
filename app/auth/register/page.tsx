@@ -42,7 +42,7 @@ export default function Register() {
     
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/api/register', {
+      const response = await fetch('http://localhost:5000/api/auth/register', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -55,7 +55,16 @@ export default function Register() {
         })
       });
 
-      const data = await response.json();
+      const contentType = response.headers.get("content-type");
+      let data;
+      
+      if (contentType && contentType.includes("application/json")) {
+        data = await response.json();
+      } else {
+        // Handle non-JSON response
+        const text = await response.text();
+        throw new Error('Server returned invalid response format');
+      }
       
       if (!response.ok) {
         throw new Error(data.message || 'Registration failed');
@@ -63,6 +72,7 @@ export default function Register() {
 
       router.push('/auth/login');
     } catch (err) {
+      console.error('Registration error:', err);
       setError(err instanceof Error ? err.message : 'Failed to connect to the server');
     } finally {
       setLoading(false);

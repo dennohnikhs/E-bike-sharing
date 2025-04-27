@@ -238,16 +238,114 @@ export default function AdminDashboard() {
     );
   };
 
-  const BikesContent = () => (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Bikes Management</h1>
-      <div className="bg-white p-6 rounded-lg shadow-md">
-        {/* Add your bikes management content here */}
-        <h2 className="text-xl font-bold mb-4">All Bikes</h2>
-        <table className="w-full">{/* Add your bikes table content */}</table>
+  const BikesContent = () => {
+    const [bikes, setBikes] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+      const fetchBikes = async () => {
+        try {
+          const token = localStorage.getItem("token");
+          if (!token) {
+            throw new Error("Authentication token not found");
+          }
+
+          const response = await fetch(
+            "http://localhost:5000/api/admin/bikes",
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const result = await response.json();
+
+          if (result.status === "success" && Array.isArray(result.data)) {
+            setBikes(result.data);
+          } else {
+            throw new Error("Invalid data format received from server");
+          }
+        } catch (err) {
+          setError(`Failed to fetch bikes: ${err.message}`);
+          console.error("Error fetching bikes:", err);
+          if (!localStorage.getItem("adminToken")) {
+            window.location.href = "/auth/login";
+          }
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchBikes();
+    }, []);
+
+    if (loading) return <div className="text-center">Loading bikes...</div>;
+    if (error) return <div className="text-red-500">Error: {error}</div>;
+
+    return (
+      <div className="space-y-6">
+        <h1 className="text-3xl font-bold">Bikes Management</h1>
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h2 className="text-xl font-bold mb-4">All Bikes</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-gray-50">
+                  <th className="px-4 py-2 text-left">UUID</th>
+                  <th className="px-4 py-2 text-left">GPS Module ID</th>
+                  <th className="px-4 py-2 text-left">Status</th>
+                  <th className="px-4 py-2 text-left">Battery Level</th>
+                  <th className="px-4 py-2 text-left">Last Updated</th>
+                  <th className="px-4 py-2 text-left">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {bikes.map((bike) => (
+                  <tr key={bike._id} className="border-b">
+                    <td className="px-4 py-2">{bike.uuid}</td>
+                    <td className="px-4 py-2">{bike.gpsModuleId}</td>
+                    <td className="px-4 py-2">
+                      <span
+                        className={`px-2 py-1 rounded-full ${
+                          bike.isAvailable
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}>
+                        {bike.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2">
+                      <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
+                        {bike.batteryLevel}%
+                      </span>
+                    </td>
+                    <td className="px-4 py-2">
+                      {new Date(bike.lastUpdated).toLocaleDateString()}
+                    </td>
+                    <td className="px-4 py-2">
+                      <button className="text-blue-500 hover:text-blue-700 mr-2">
+                        Edit
+                      </button>
+                      <button className="text-red-500 hover:text-red-700">
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const BookingsContent = () => (
     <div className="space-y-6">
