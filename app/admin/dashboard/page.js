@@ -9,6 +9,7 @@ import {
   BsGear,
   BsPlus,
   BsList,
+  BsX,
 } from "react-icons/bs";
 
 export default function AdminDashboard() {
@@ -20,6 +21,16 @@ export default function AdminDashboard() {
     totalBookings: 0,
     totalRevenue: 0,
   });
+  const [showAddBikeModal, setShowAddBikeModal] = useState(false);
+  const [bikeFormData, setBikeFormData] = useState({
+    uuid: "",
+    gpsModuleId: "",
+    batteryLevel: 100,
+    isAvailable: true,
+    status: "available",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
 
   useEffect(() => {
     // TODO: Fetch real stats from your API
@@ -33,6 +44,53 @@ export default function AdminDashboard() {
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const handleAddBike = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("No authentication token found");
+      }
+
+      const response = await fetch("http://localhost:5000/api/admin/add-bike", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(bikeFormData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to add bike");
+      }
+
+      // Reset form and close modal
+      setBikeFormData({
+        uuid: "",
+        gpsModuleId: "",
+        batteryLevel: 100,
+        isAvailable: true,
+        status: "available",
+      });
+      setShowAddBikeModal(false);
+
+      // Refresh bikes list if you're on the bikes page
+      if (activeTab === "bikes") {
+        // Trigger bikes refresh logic here
+      }
+    } catch (error) {
+      setSubmitError(error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const StatCard = ({ title, value, icon: Icon }) => (
@@ -70,10 +128,6 @@ export default function AdminDashboard() {
     <>
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold">Dashboard Overview</h1>
-        <div className="flex gap-4">
-          <ActionButton title="Add Bike" icon={BsPlus} onClick={() => {}} />
-          <ActionButton title="Add User" icon={BsPlus} onClick={() => {}} />
-        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -371,6 +425,95 @@ export default function AdminDashboard() {
     </div>
   );
 
+  const AddBikeModal = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold">Add New Bike</h2>
+          <button
+            onClick={() => setShowAddBikeModal(false)}
+            className="text-gray-500 hover:text-gray-700">
+            <BsX className="text-2xl" />
+          </button>
+        </div>
+
+        <form onSubmit={handleAddBike} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              UUID
+            </label>
+            <input
+              type="text"
+              value={bikeFormData.uuid}
+              onChange={(e) =>
+                setBikeFormData({ ...bikeFormData, uuid: e.target.value })
+              }
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              GPS Module ID
+            </label>
+            <input
+              type="text"
+              value={bikeFormData.gpsModuleId}
+              onChange={(e) =>
+                setBikeFormData({
+                  ...bikeFormData,
+                  gpsModuleId: e.target.value,
+                })
+              }
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Battery Level (%)
+            </label>
+            <input
+              type="number"
+              min="0"
+              max="100"
+              value={bikeFormData.batteryLevel}
+              onChange={(e) =>
+                setBikeFormData({
+                  ...bikeFormData,
+                  batteryLevel: parseInt(e.target.value),
+                })
+              }
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              required
+            />
+          </div>
+
+          {submitError && (
+            <div className="text-red-500 text-sm">{submitError}</div>
+          )}
+
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => setShowAddBikeModal(false)}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md">
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-md disabled:opacity-50">
+              {isSubmitting ? "Adding..." : "Add Bike"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+
   return (
     <div className="flex relative">
       {/* Hamburger Menu Button (Mobile Only) */}
@@ -428,7 +571,14 @@ export default function AdminDashboard() {
       )}
 
       <div className="flex-1 p-6 bg-gray-100 min-h-screen lg:ml-0">
-        <div className="flex justify-end mb-4">
+        <div className="flex justify-end gap-2 items-center mb-4">
+          <div className="flex gap-4">
+            <ActionButton
+              title="Add Bike"
+              icon={BsPlus}
+              onClick={() => setShowAddBikeModal(true)}
+            />
+          </div>
           <button
             onClick={() => {
               localStorage.removeItem("adminToken");
@@ -446,6 +596,7 @@ export default function AdminDashboard() {
         {activeTab === "bookings" && <BookingsContent />}
         {activeTab === "settings" && <SettingsContent />}
       </div>
+      {showAddBikeModal && <AddBikeModal />}
     </div>
   );
 }
