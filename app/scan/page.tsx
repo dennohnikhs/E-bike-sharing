@@ -25,21 +25,6 @@ export default function ScanPage() {
   const [error, setError] = useState<string>('');
   const [showScanner, setShowScanner] = useState(false);
 
-  const fetchBikeInfo = async (uuid: string) => {
-    setIsLoading(true);
-    setError('');
-    try {
-      const response = await fetch(`http://localhost:5000/api/admin/qr/${uuid}`);
-      if (!response.ok) throw new Error('Bike not found');
-      const data = await response.json();
-      window.location.href = `/bike/${uuid}`;
-    } catch (err) {
-      setError('Failed to fetch bike information');
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   useEffect(() => {
     if (!showScanner) return;
@@ -88,6 +73,22 @@ export default function ScanPage() {
     };
   }, [showScanner]);
 
+  const fetchBikeInfo = async (uuid: string) => {
+    setIsLoading(true);
+    setError('');
+    try {
+      const response = await fetch(`http://localhost:5000/api/admin/qr/${uuid}`);
+      if (!response.ok) throw new Error('Bike not found');
+      window.location.href = `/bike/${uuid}`;
+    } catch (err) {
+      setError('Failed to fetch bike information');
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+ 
   return (
     <div className="min-h-screen bg-gradient-to-b from-eco-light to-primary-light">
       <div className="container mx-auto px-4 py-8">
@@ -138,7 +139,7 @@ export default function ScanPage() {
                 <p className="text-red-800">{error}</p>
               </div>
             )}
-
+{/* 
             {bikeInfo && (
               <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
                 <div className="bg-white rounded-2xl p-6 w-full max-w-md">
@@ -189,12 +190,12 @@ export default function ScanPage() {
                       href={`/booking/${bikeInfo.uuid}`}
                       className="flex-1 bg-primary-dark text-white py-3 px-4 rounded-lg hover:bg-primary-darker transition-colors text-center"
                     >
-                      Proceed to Booking
+                      Book Now
                     </Link>
                   </div>
                 </div>
               </div>
-            )}
+            )} */}
 
           </div>
         </div>

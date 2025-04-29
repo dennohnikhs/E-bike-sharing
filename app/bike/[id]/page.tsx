@@ -107,13 +107,21 @@ export default function BikeDetailsPage() {
               </div>
             </div>
 
-            <div className="pt-6">
-              <Link
-                href={`/booking/${bikeInfo.uuid}`}
-                className="w-full bg-primary-dark text-white py-3 px-4 rounded-lg hover:bg-primary-darker transition-colors text-center block"
-              >
-                Proceed to Booking
-              </Link>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  onClick={() => setBikeInfo(null)}
+                  className="bg-gray-200 text-gray-800 py-3 px-4 rounded-lg hover:bg-gray-300 transition-colors text-center"
+                >
+                  Cancel
+                </button>
+                <Link
+                  href={`/booking/${bikeInfo.uuid}`}
+                  className="bg-primary-dark text-white py-3 px-4 rounded-lg hover:bg-primary-darker transition-colors text-center"
+                >
+                  Book Now
+                </Link>
+              </div>
             </div>
           </div>
         </div>
