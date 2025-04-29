@@ -89,7 +89,6 @@ export default function BookingPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          // Add your authentication token here
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
         body: JSON.stringify(bookingPayload)
@@ -102,7 +101,21 @@ export default function BookingPage() {
       }
 
       if (result.success) {
-        // Redirect to booking confirmation or user's bookings page
+        // Update bike status to booked
+        const updateResponse = await fetch(`http://localhost:5000/api/admin/edit-bike/${bikeInfo.uuid}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify({ status: 'booked' })
+        });
+
+        if (!updateResponse.ok) {
+          console.error('Failed to update bike status');
+        }
+
+        // Redirect to booking confirmation
         window.location.href = '/bookings/success';
       }
     } catch (err: any) {
@@ -173,6 +186,8 @@ export default function BookingPage() {
               >
                 Cancel
               </Link>
+              <Link href={`/checkout/`} className="flex items-center justify-center">
+              
               <button
                 type="submit"
                 disabled={submitting}
@@ -180,8 +195,10 @@ export default function BookingPage() {
                   submitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-primary-darker'
                 }`}
               >
-                {submitting ? 'Processing...' : 'Confirm Booking'}
+                {submitting ? 'Processing...' : 'Proceed to Checkout'}
               </button>
+              </Link>
+            
             </div>
           </form>
         </div>
