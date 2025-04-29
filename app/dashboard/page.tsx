@@ -12,8 +12,49 @@ interface TokenPayload {
   exp: number;
 }
 
+interface BookingStats {
+  totalRides: number;
+  totalDistance: number;
+  co2Saved: number;
+  activeRentals: number;
+}
+
 export default function Dashboard() {
   const [userData, setUserData] = useState<{ name: string; id: string } | null>(null);
+  const [bookingStats, setBookingStats] = useState<BookingStats>({
+    totalRides: 0,
+    totalDistance: 0,
+    co2Saved: 0,
+    activeRentals: 0
+  });
+
+  const fetchBookingStats = async (userId: string) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:5000/api/bookings/my-bookings`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      
+      // Calculate stats from bookings
+      const totalRides = data.length;
+      const activeRentals = data.filter((booking: any) => booking.status === 'active').length;
+      // Assuming each ride saves about 0.2kg of CO2 per km
+      const totalDistance = data.reduce((acc: number, booking: any) => acc + (booking.distance || 0), 0);
+      const co2Saved = totalDistance * 0.2;
+
+      setBookingStats({
+        totalRides,
+        totalDistance,
+        co2Saved,
+        activeRentals
+      });
+    } catch (error) {
+      console.error('Error fetching bookings:', error);
+    }
+  };
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -24,6 +65,7 @@ export default function Dashboard() {
           name: decodedToken.name || 'User',
           id: decodedToken.userId || 'Unknown'
         });
+        fetchBookingStats(decodedToken.userId);
       } catch (error) {
         console.error('Error decoding token:', error);
       }
@@ -52,16 +94,21 @@ export default function Dashboard() {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {['Total Rides', 'Distance', 'CO₂ Saved', 'Active Rentals'].map((stat, index) => (
+          {[
+            { label: 'Total Rides', value: bookingStats.totalRides },
+            { label: 'Distance', value: `${bookingStats.totalDistance.toFixed(1)} km` },
+            { label: 'CO₂ Saved', value: `${bookingStats.co2Saved.toFixed(1)} kg` },
+            { label: 'Active Rentals', value: bookingStats.activeRentals }
+          ].map((stat, index) => (
             <div key={index} className="bg-white rounded-xl shadow-md p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-gray-700">{stat}</h3>
+                <h3 className="font-semibold text-gray-700">{stat.label}</h3>
                 <div className="rounded-full p-2" style={{ background: 'var(--color-eco-light)' }}>
                   <ChartBarIcon className="w-5 h-5" style={{ color: 'var(--color-primary)' }} />
                 </div>
               </div>
               <p className="text-2xl font-bold" style={{ color: 'var(--color-primary-dark)' }}>
-                {index === 0 ? '24' : index === 1 ? '156 km' : index === 2 ? '45 kg' : '1'}
+                {stat.value}
               </p>
             </div>
           ))}
