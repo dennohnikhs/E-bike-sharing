@@ -19,9 +19,9 @@ export default function CheckoutPage() {
         <div className="bg-white rounded-lg shadow-md p-6">
           <h2 className="text-xl font-semibold mb-4">Select Payment Method</h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             {/* Payment Options */}
-            <button
+            {/* <button
               className={`p-4 border rounded-lg flex flex-col items-center ${
                 selectedPayment === 'mpesa' ? 'border-blue-500 bg-blue-50' : ''
               }`}
@@ -29,7 +29,7 @@ export default function CheckoutPage() {
             >
               <FaMobile className="text-3xl mb-2" />
               <span>M-Pesa</span>
-            </button>
+            </button> */}
 
             <button
               className={`p-4 border rounded-lg flex flex-col items-center ${

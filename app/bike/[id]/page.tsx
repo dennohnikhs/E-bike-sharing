@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
+import {  ref, onValue} from "firebase/database";
+import { db } from '@/utils/firebase';
 
 interface BikeInfo {
   _id: string;
@@ -17,12 +19,28 @@ interface BikeInfo {
   updatedAt: string;
   __v: number;
 }
-
+type Item = {
+  timestamp: string;
+  lat: string;
+  lan: string;
+  // speed: number;
+  // batteryLevel: number;
+  // distance: number;
+}
 export default function BikeDetailsPage() {
   const params = useParams();
   const [bikeInfo, setBikeInfo] = useState<BikeInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>('');
+
+  const [AllDataLog, setAllDataLog] = useState<Item[]>([]);
+  const [latestData, setLatestData] = useState<Item>({
+    timestamp: '',
+    lat: '',
+    lan: ''
+  });
+
+  // 
 
   useEffect(() => {
     const fetchBikeInfo = async () => {
@@ -40,6 +58,24 @@ export default function BikeDetailsPage() {
 
     fetchBikeInfo();
   }, [params.id]);
+
+    //  Ensure this is where we are gitting the uid
+      useEffect(() => {
+      let uid = bikeInfo?.uuid // ensure this is the uid
+      const query = ref(db, `DeviceData/${uid}/readings`);
+      const vals: Item[] = []
+      onValue(query, (snapshot) => {
+        const data = snapshot.val();
+        if (snapshot.exists()) {
+          Object.values(data).map((DeviceData) => {
+            console.log(DeviceData)
+            return vals.push(DeviceData as Item)
+          });
+        }
+        setAllDataLog(vals.slice(-100))
+        setLatestData(vals[vals.length-1])
+      });
+    }, [bikeInfo]);
 
   if (isLoading) {
     return <div className="p-4">Loading...</div>;
@@ -106,6 +142,23 @@ export default function BikeDetailsPage() {
                 </div>
               </div>
             </div>
+            <div>
+              <h2 className="text-lg font-semibold text-primary-dark mb-4">Latest Data</h2>
+              <div className="space-y-3">
+                <div>
+                  <span className="text-gray-600">Timestamp:</span>
+                  <p className="font-semibold">{new Date(parseInt(latestData?.timestamp)*1000).toLocaleString()}</p>
+                </div>
+                <div>
+                  <span className="text-gray-600">Latitude:</span>
+                  <p className="font-semibold">{latestData?.lat}</p>
+                </div>
+                <div>
+                  <span className="text-gray-600">Longitude:</span>
+                  <p className="font-semibold">{latestData?.lan}</p>
+                </div>
+              </div>
+              </div>
 
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
@@ -129,3 +182,4 @@ export default function BikeDetailsPage() {
     </div>
   );
 }
+

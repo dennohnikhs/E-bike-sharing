@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { ArrowLeftIcon, QrCodeIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
+import {  ref, onValue,update} from "firebase/database";
+import { db } from '@/utils/firebase';
 
 interface BikeInfo {
   _id: string;
@@ -18,12 +20,31 @@ interface BikeInfo {
   __v: number;
 }
 
+
+
 export default function ScanPage() {
   const [result, setResult] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [bikeInfo, setBikeInfo] = useState<BikeInfo | null>(null);
   const [error, setError] = useState<string>('');
   const [showScanner, setShowScanner] = useState(false);
+
+
+  const setActiveUid = async (uid: string) => {
+
+    try {
+    //   update(ref(db,`settings/mobile/${pathdb}`), updates);
+      update(ref(db,"DeviceData"), { activebike: uid });
+      return 
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error('Error updating uid:', error.message);
+      } else {
+        console.error('Error updating uid:', error);
+      }
+      return
+    }
+  };
 
 
   useEffect(() => {
@@ -79,6 +100,7 @@ export default function ScanPage() {
     try {
       const response = await fetch(`http://localhost:5000/api/admin/qr/${uuid}`);
       if (!response.ok) throw new Error('Bike not found');
+      setActiveUid(uuid)
       window.location.href = `/bike/${uuid}`;
     } catch (err) {
       setError('Failed to fetch bike information');
@@ -88,7 +110,10 @@ export default function ScanPage() {
     }
   };
 
- 
+  // useEffect(()=>{
+  //   setActiveUid(result)
+  // },[result])
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-eco-light to-primary-light">
       <div className="container mx-auto px-4 py-8">
